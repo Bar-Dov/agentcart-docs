@@ -9,6 +9,10 @@ export const metadata = {
   },
   description:
     'AgentCart documentation — connect your store to AI agents via the Universal Commerce Protocol.',
+  icons: {
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
 }
 
 export default async function RootLayout({
