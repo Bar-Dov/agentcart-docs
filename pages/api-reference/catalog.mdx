@@ -1,1 +1,59 @@
-# Coming soon
+# Catalog
+
+## Search products
+
+```
+GET /api/ucp/{slug}/catalog/search?q={query}&first={n}
+```
+
+Full-text product search proxied to the Shopify Admin API.
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `q` | string | required | Search terms |
+| `first` | integer | 20 | Max results to return |
+
+### Response
+
+```json
+{
+  "products": [
+    {
+      "id": "gid://shopify/Product/123456",
+      "title": "Running Shoes",
+      "description": "Lightweight running shoes...",
+      "handle": "running-shoes",
+      "url": "https://mystore.myshopify.com/products/running-shoes",
+      "price_range": { "min": 7900, "max": 12900, "currency": "USD" },
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/789",
+          "title": "Size 10",
+          "price": 9900,
+          "currency": "USD",
+          "available": true
+        }
+      ],
+      "media": [{ "url": "https://cdn.shopify.com/...", "alt": "Running shoes" }]
+    }
+  ]
+}
+```
+
+## Look up products by ID
+
+```
+GET /api/ucp/{slug}/catalog/lookup?ids={id1},{id2}
+```
+
+Fetch specific products or variants by Shopify GID.
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `ids` | string | Comma-separated Shopify GIDs |
+
+Accepts Product GIDs (`gid://shopify/Product/...`) and ProductVariant GIDs (`gid://shopify/ProductVariant/...`).

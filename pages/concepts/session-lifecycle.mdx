@@ -1,1 +1,32 @@
-# Coming soon
+# Session Lifecycle
+
+A checkout session moves through these states:
+
+```
+initiated → requires_escalation → completed
+                               ↘ failed (canceled)
+```
+
+## State descriptions
+
+| Status | Meaning | Next action |
+|--------|---------|-------------|
+| `initiated` | Session created, cart being built | Automatic — transitions to `requires_escalation` |
+| `requires_escalation` | Cart ready, buyer must complete payment at `continue_url` | Agent redirects buyer, then calls `/complete` |
+| `completed` | Buyer finished payment | Terminal — no further actions |
+| `failed` | Session canceled or errored | Terminal — create a new session if needed |
+
+## Transition rules
+
+- `initiated → requires_escalation` — happens automatically when the Shopify cart is created
+- `requires_escalation → completed` — via `POST /checkout-sessions/{id}/complete`
+- `requires_escalation → failed` — via `POST /checkout-sessions/{id}/cancel`
+- Any terminal state → **409 Conflict** if you try to complete again
+
+## Expiry
+
+Sessions expire after **6 hours** from creation. The `expires_at` field in the response gives the exact timestamp. Expired sessions cannot be completed.
+
+## Idempotency and sessions
+
+If you pass an `Idempotency-Key` header on session creation and the key already exists (for a non-failed session), the existing session is returned unchanged. This lets agents safely retry the creation call without creating duplicate sessions.

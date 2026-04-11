@@ -1,1 +1,78 @@
-# Coming soon
+# MCP Transport
+
+AgentCart exposes a [Model Context Protocol](https://modelcontextprotocol.io) endpoint for AI agents that use JSON-RPC 2.0 instead of REST.
+
+## Endpoint
+
+```
+POST https://app.agentcart.io/api/ucp/{slug}/mcp
+Content-Type: application/json
+```
+
+## Protocol
+
+Standard JSON-RPC 2.0. Every request has:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/list",
+  "params": {}
+}
+```
+
+## Discovering tools
+
+```bash
+curl -X POST https://app.agentcart.io/api/ucp/{slug}/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+```
+
+Returns the four available tools: `create_checkout_session`, `get_checkout_session`, `complete_checkout_session`, `cancel_checkout_session`.
+
+## Calling a tool
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "create_checkout_session",
+    "arguments": {
+      "line_items": [
+        { "item": { "id": "gid://shopify/Product/123456" }, "quantity": 1 }
+      ]
+    }
+  }
+}
+```
+
+The response wraps the REST API response in MCP content format:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      { "type": "text", "text": "{\"id\":\"...\",\"status\":\"requires_escalation\",...}" }
+    ]
+  }
+}
+```
+
+## Error codes
+
+| Code | Meaning |
+|------|---------|
+| `-32700` | Parse error — invalid JSON |
+| `-32601` | Method or tool not found |
+| `-32602` | Missing required parameter |
+| `-32000` | Upstream error from REST endpoint |
+
+## CORS
+
+The MCP endpoint allows cross-origin requests from any origin. No API key is required beyond the merchant's `slug` being in the URL.

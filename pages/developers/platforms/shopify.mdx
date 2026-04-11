@@ -1,1 +1,59 @@
-# Coming soon
+# Shopify Integration
+
+Shopify is the first fully supported platform. AgentCart uses both the Shopify Admin API and Storefront API.
+
+## Prerequisites
+
+| Credential | Where to get it | Used for |
+|------------|----------------|----------|
+| Shopify domain | Your `.myshopify.com` domain | API calls |
+| Admin API token | Shopify Partners app or custom app | Product search + lookup |
+| Storefront API token | Shopify Admin → Apps → Develop apps | Cart creation + real totals |
+
+### Getting a Storefront API token
+
+1. Go to **Shopify Admin → Settings → Apps and sales channels → Develop apps**
+2. Create a new app (or use an existing one)
+3. Under **API credentials → Storefront API access tokens**, create a token
+4. Required scopes: `unauthenticated_read_product_listings`, `unauthenticated_write_checkouts`
+
+## Checkout flow
+
+```
+Agent POST /checkout-sessions
+  → AgentCart resolves variant IDs (Storefront API or Admin API)
+  → cartCreate mutation (Storefront API)
+      ↳ returns checkoutUrl + cost { subtotalAmount, totalTaxAmount, totalAmount }
+  → Session stored with totals in database
+  → Agent receives: continue_url, totals, status: requires_escalation
+  → Agent redirects buyer to continue_url (Shopify checkout)
+  → Buyer completes payment on Shopify
+  → Agent POST /checkout-sessions/{id}/complete
+```
+
+## Product ID formats
+
+Shopify uses GID (Global ID) format. AgentCart accepts:
+
+| Format | Example |
+|--------|---------|
+| Product GID | `gid://shopify/Product/123456` |
+| Variant GID | `gid://shopify/ProductVariant/789012` |
+| Product URL | `https://mystore.com/products/my-product` |
+
+If a Product GID or URL is passed, AgentCart resolves the first available variant automatically.
+
+## Limitations
+
+- **Payment:** Redirect-only. Native payment (credit card via Shopify) is not supported — buyers must complete payment on the Shopify checkout page.
+- **Shipping:** Shipping address capture and shipping rate selection are not supported in the current UCP implementation.
+- **No storefront token fallback:** If no Storefront API token is provided, AgentCart builds a cart permalink URL instead of a real Shopify cart. Totals will show as 0.
+
+## URL redirect setup
+
+Add this in **Shopify Admin → Online Store → Navigation → URL Redirects**:
+
+- **From:** `/.well-known/ucp`
+- **To:** `https://app.agentcart.io/api/ucp/{your-slug}`
+
+This is what routes AI agents from your domain to your AgentCart manifest.

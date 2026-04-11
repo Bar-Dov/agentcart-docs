@@ -1,1 +1,33 @@
-# Coming soon
+# Platform Integrations
+
+AgentCart supports multiple e-commerce platforms via a `CommerceAdapter` interface. Each platform implements the same contract, so the UCP layer above it is platform-agnostic.
+
+## Supported platforms
+
+| Platform | Status | Checkout | Catalog |
+|----------|--------|----------|---------|
+| **Shopify** | ✅ Live | Storefront API (real totals) | Admin API |
+| **WooCommerce** | 🔜 Coming soon | — | — |
+| **Magento** | 🔜 Coming soon | — | — |
+| **Custom / Headless** | 🔜 On roadmap | — | — |
+
+## CommerceAdapter interface
+
+All platforms implement this TypeScript interface:
+
+```typescript
+interface CommerceAdapter {
+  verifyToken(): Promise<{ valid: boolean; storeName: string | null }>
+  createCart(items: CartItem[], options?: CartOptions): Promise<CreateCartResult>
+  searchProducts(query: string, first?: number): Promise<UcpProduct[]>
+  lookupProducts(ids: string[]): Promise<UcpProduct[]>
+}
+```
+
+- `createCart` returns a `checkoutUrl` and optionally `totals` in minor units
+- `searchProducts` and `lookupProducts` return products in UCP format
+- `verifyToken` validates the platform credentials at connection time
+
+## Requesting a platform
+
+If your platform isn't listed, contact us at [app.agentcart.io](https://app.agentcart.io). Priority is based on demand.

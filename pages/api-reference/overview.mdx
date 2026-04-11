@@ -1,1 +1,47 @@
-# Coming soon
+# API Reference
+
+All AgentCart UCP endpoints follow the pattern:
+
+```
+https://app.agentcart.io/api/ucp/{slug}
+```
+
+Where `{slug}` is your store's unique identifier, visible in the AgentCart dashboard under **Settings**.
+
+## Authentication
+
+No API key required. The `slug` in the URL is sufficient to identify the merchant. Endpoints return `404` if the slug is invalid or UCP is not enabled for that store.
+
+## CORS
+
+All UCP endpoints allow cross-origin requests from any origin:
+
+```
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: POST, GET, PUT, OPTIONS
+Access-Control-Allow-Headers: content-type, ucp-agent, request-id, idempotency-key
+```
+
+## UCP version envelope
+
+Every response includes a `ucp` envelope with the protocol version:
+
+```json
+{
+  "ucp": {
+    "version": "2026-01-23",
+    "capabilities": {
+      "dev.ucp.shopping.checkout": { "version": "2026-01-23" },
+      "dev.ucp.shopping.catalog": { "version": "2026-01-23" }
+    }
+  }
+}
+```
+
+## Amounts
+
+All monetary amounts are in **minor units** (e.g. `4999` = $49.99). Currency is specified separately as an ISO 4217 code (e.g. `"USD"`).
+
+## Full OpenAPI spec
+
+Download the full spec: [`/openapi.yaml`](/openapi.yaml)

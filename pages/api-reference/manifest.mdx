@@ -1,1 +1,46 @@
-# Coming soon
+# UCP Manifest
+
+```
+GET https://app.agentcart.io/api/ucp/{slug}
+```
+
+Returns the store's UCP manifest. AI agents fetch this to discover services and capabilities.
+
+## Response
+
+```json
+{
+  "ucp": {
+    "version": "2026-01-23",
+    "services": {
+      "dev.ucp.shopping": {
+        "transport": "rest/1.0",
+        "endpoint": "https://app.agentcart.io/api/ucp/{slug}",
+        "schema": "https://ucp.dev/schemas/shopping/rest.openapi.json"
+      },
+      "dev.ucp.shopping.mcp": {
+        "transport": "mcp/1.0",
+        "endpoint": "https://app.agentcart.io/api/ucp/{slug}/mcp",
+        "schema": "https://ucp.dev/schemas/shopping/mcp.json"
+      }
+    },
+    "capabilities": {
+      "dev.ucp.shopping.checkout": { "version": "2026-01-23" },
+      "dev.ucp.shopping.catalog": { "version": "2026-01-23" }
+    },
+    "payment_handlers": {
+      "redirect": {
+        "type": "dev.ucp.payment.redirect",
+        "redirect_url": "https://app.agentcart.io/api/ucp/{slug}/checkout-sessions"
+      }
+    }
+  }
+}
+```
+
+## How agents use this
+
+Agents fetch `/.well-known/ucp` on the merchant's domain. The merchant has a URL redirect pointing that to this endpoint. From the manifest, agents discover:
+- Which transport to use (REST or MCP)
+- The checkout endpoint URL
+- What capabilities are available

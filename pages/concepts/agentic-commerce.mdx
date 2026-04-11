@@ -1,1 +1,30 @@
-# Coming soon
+# Agentic Commerce
+
+Agentic commerce refers to AI agents — ChatGPT, Perplexity, Google AI Mode — autonomously discovering, evaluating, and purchasing products on behalf of users.
+
+## Why it matters
+
+Traditional SEO optimizes for humans using search engines. Agentic commerce optimizes for AI agents that:
+- Don't use web browsers — they query structured APIs
+- Make purchase decisions based on product data quality
+- Prefer stores with machine-readable catalogs and checkout APIs
+
+A store without UCP support is invisible to these agents.
+
+## The agent flow
+
+1. User tells an AI agent: *"Buy me running shoes under $100"*
+2. Agent queries stores it knows about via their UCP manifests
+3. Agent searches catalogs, compares products, picks the best match
+4. Agent initiates a checkout session
+5. Agent presents the `continue_url` to the user to complete payment
+
+## What makes a store agent-ready
+
+| Signal | Why agents care |
+|--------|----------------|
+| UCP manifest at `/.well-known/ucp` | Discoverability — agents can find you |
+| Rich product descriptions | Decision-making — agents understand your products |
+| Correct pricing in minor units | Accuracy — no rounding or currency confusion |
+| Working checkout API | Conversion — agent can initiate purchase |
+| Structured data (JSON-LD) | Trust — cross-references catalog with web schema |

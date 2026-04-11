@@ -1,1 +1,80 @@
-# Coming soon
+# How AgentCart Implements UCP
+
+AgentCart acts as a UCP host for merchant stores. This page explains what each layer does.
+
+## Manifest
+
+Every connected merchant gets a unique UCP slug (e.g. `abc123`). The manifest is served at:
+
+```
+GET https://app.agentcart.io/api/ucp/{slug}
+```
+
+The manifest advertises two services:
+
+```json
+{
+  "ucp": {
+    "version": "2026-01-23",
+    "services": {
+      "dev.ucp.shopping": {
+        "transport": "rest/1.0",
+        "endpoint": "https://app.agentcart.io/api/ucp/{slug}"
+      },
+      "dev.ucp.shopping.mcp": {
+        "transport": "mcp/1.0",
+        "endpoint": "https://app.agentcart.io/api/ucp/{slug}/mcp"
+      }
+    },
+    "capabilities": {
+      "dev.ucp.shopping.checkout": { "version": "2026-01-23" },
+      "dev.ucp.shopping.catalog": { "version": "2026-01-23" }
+    }
+  }
+}
+```
+
+Merchants add a URL redirect from `/.well-known/ucp` on their domain to this URL.
+
+## Catalog
+
+Two endpoints let agents search and look up products:
+
+- `GET /api/ucp/{slug}/catalog/search?q=...` — full-text product search
+- `GET /api/ucp/{slug}/catalog/lookup?ids=...` — lookup by Shopify GID
+
+Both proxy to the Shopify Admin API and return products in UCP format with prices in minor units (cents).
+
+## Checkout
+
+Checkout uses a **redirect payment handler**. The full flow:
+
+1. Agent `POST /checkout-sessions` with `line_items`
+2. AgentCart creates a Shopify cart via the Storefront API, gets real totals
+3. Returns `continue_url` (Shopify checkout URL) + `status: requires_escalation`
+4. Agent redirects buyer to `continue_url`
+5. After payment, agent `POST /checkout-sessions/{id}/complete`
+
+## Idempotency
+
+Checkout session creation supports the `Idempotency-Key` header. If a session with the same key already exists (and isn't failed), the original session is returned instead of creating a new one.
+
+## Totals
+
+Totals are returned in **minor units** (e.g. `4999` = $49.99):
+
+```json
+{
+  "totals": {
+    "subtotal": 4999,
+    "tax": 400,
+    "total": 5399
+  }
+}
+```
+
+The currency is returned in the top-level `currency` field (ISO 4217, e.g. `"USD"`).
+
+## MCP transport
+
+AgentCart exposes a JSON-RPC 2.0 endpoint at `/api/ucp/{slug}/mcp` for agents using the Model Context Protocol. See [MCP Transport](/developers/mcp-transport).

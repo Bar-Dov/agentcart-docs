@@ -1,1 +1,32 @@
-# Coming soon
+# Reading Analytics
+
+The **Agent Activity** tab shows how AI agents are interacting with your store.
+
+## Metrics
+
+| Metric | What it means |
+|--------|--------------|
+| **Manifest requests** | Times an AI agent fetched your UCP manifest — agents discovering your store |
+| **Checkout sessions** | Times an agent initiated a purchase for a user |
+| **Completed sessions** | Sessions where the buyer completed checkout |
+| **Conversion rate** | Completed ÷ initiated |
+
+## Agent platforms
+
+The breakdown shows which AI platforms are generating traffic:
+- **Google AI Mode** — Google's shopping-integrated AI search
+- **ChatGPT** — OpenAI's shopping plugin / assistant
+- **Perplexity** — Perplexity's commerce features
+- **Unknown** — Unidentified agents (no `UCP-Agent` header)
+
+## Activity feed
+
+The feed shows recent agent events in chronological order: manifest reads, checkout initiations, completions, and cancellations.
+
+## Products tab
+
+Shows which products agents searched for and requested most frequently. Use this to prioritize description optimization.
+
+## What "requires escalation" means
+
+Most UCP checkout sessions use a **redirect payment handler** — the agent creates the session, then redirects the buyer to your Shopify checkout to complete payment. The session status `requires_escalation` means the session is active and waiting for the buyer. This is the normal, expected state — it's not an error.

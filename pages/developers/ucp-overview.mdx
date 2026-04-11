@@ -1,1 +1,28 @@
-# Coming soon
+# Universal Commerce Protocol (UCP)
+
+AgentCart is built on the **Universal Commerce Protocol (UCP)** — an open standard that lets AI agents discover, search, and transact with any e-commerce store.
+
+## What UCP defines
+
+- A **manifest** at `/.well-known/ucp` describing a store's services and capabilities
+- A **REST API** for catalog search and checkout session management
+- An **MCP transport** for agents using the Model Context Protocol
+- A **checkout session lifecycle**: `initiated → requires_escalation → completed` or `failed`
+
+## Official resources
+
+| Resource | URL |
+|----------|-----|
+| UCP GitHub repo | [github.com/Universal-Commerce-Protocol/ucp](https://github.com/Universal-Commerce-Protocol/ucp) |
+| Checkout schema | [ucp.dev/schemas/shopping/checkout.json](https://ucp.dev/schemas/shopping/checkout.json) |
+| Catalog schema | [ucp.dev/schemas/shopping/catalog_search.json](https://ucp.dev/schemas/shopping/catalog_search.json) |
+
+## UCP version
+
+AgentCart implements UCP version **`2026-01-23`**. This version string is returned in every API response under the `ucp.version` field.
+
+## How AgentCart relates to UCP
+
+AgentCart is a **UCP host** — it generates and serves UCP manifests on behalf of merchants. Merchants don't need to implement UCP themselves; AgentCart handles the protocol layer while connecting to their existing Shopify store.
+
+See [How AgentCart Implements UCP](/developers/how-agentcart-implements-ucp) for the technical details.

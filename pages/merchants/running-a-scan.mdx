@@ -1,1 +1,35 @@
-# Coming soon
+# Running a Scan
+
+A scan evaluates your store's AI readiness. You can run scans manually or they run automatically weekly once you're connected.
+
+## Manual scan
+
+1. Go to **Scans** in the sidebar
+2. Click **New Scan**
+3. Enter your store URL (e.g. `mystore.myshopify.com` or `https://mystore.com`)
+4. Click **Start Scan**
+
+The scan takes 1–3 minutes depending on catalog size. You'll see the status update in real time: **Crawling → Scoring → Simulating → Complete**.
+
+## What gets scanned
+
+| Category | What's checked |
+|----------|---------------|
+| Product titles | Length, clarity, keyword relevance |
+| Descriptions | Presence, length, AI parseability |
+| Images | Presence per product |
+| Pricing | Consistent currency, no missing prices |
+| Structured data | JSON-LD schema markup on product pages |
+| Checkout | Can agents initiate a purchase? |
+
+## Scan history
+
+All past scans are saved under **Scans**. Each row shows:
+- Store URL and platform badge
+- Status (Complete, Failed, Crawling, etc.)
+- Raw score
+- AgentCart score (shown when scan post-dates your connection)
+
+## Automatic weekly scans
+
+Once your store is connected, AgentCart rescans automatically every 7 days to keep scores and enriched data current.

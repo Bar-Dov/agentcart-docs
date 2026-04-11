@@ -1,1 +1,56 @@
-# Coming soon
+# Complete & Cancel
+
+## Complete a session
+
+```
+POST /api/ucp/{slug}/checkout-sessions/{sessionId}/complete
+```
+
+Marks the session as `completed`. Call this after the buyer has finished payment on the Shopify checkout page.
+
+### Guard
+
+Only sessions in `initiated` or `requires_escalation` state can be completed. Attempting to complete an already-terminal session returns **409 Conflict**.
+
+### Response (200)
+
+```json
+{
+  "id": "session-uuid",
+  "status": "completed",
+  "currency": "USD",
+  "totals": { "subtotal": 9900, "tax": 792, "total": 10692 },
+  "links": [
+    { "rel": "terms-of-service", "href": "https://store.com/policies/terms-of-service" }
+  ]
+}
+```
+
+## Cancel a session
+
+```
+POST /api/ucp/{slug}/checkout-sessions/{sessionId}/cancel
+```
+
+Cancels an active session. Sets status to `failed`.
+
+### Guard
+
+Cannot cancel an already-completed session (returns `404`).
+
+### Response (200)
+
+```json
+{
+  "id": "session-uuid",
+  "status": "canceled",
+  "currency": "USD",
+  "totals": { "subtotal": 0, "tax": 0, "total": 0 }
+}
+```
+
+import { Callout } from 'nextra/components'
+
+<Callout>
+Totals in the cancel response are `0` — the Shopify cart was never charged. Totals in the complete response reflect what was in the session at the time of completion.
+</Callout>

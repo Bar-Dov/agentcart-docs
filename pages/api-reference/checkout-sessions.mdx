@@ -1,1 +1,76 @@
-# Coming soon
+# Checkout Sessions
+
+## Create a session
+
+```
+POST /api/ucp/{slug}/checkout-sessions
+```
+
+Creates a checkout session for one or more products.
+
+### Request body
+
+```json
+{
+  "line_items": [
+    {
+      "item": {
+        "id": "gid://shopify/Product/123456",
+        "title": "Running Shoes",
+        "price": 9900
+      },
+      "quantity": 1
+    }
+  ],
+  "buyer": {
+    "email": "buyer@example.com"
+  }
+}
+```
+
+- `item.id` — Shopify GID (Product, ProductVariant, or product URL)
+- `price` — optional hint; actual price is fetched from Shopify
+- `buyer` — optional; not stored in checkout currently
+
+### Idempotency
+
+Include `Idempotency-Key: <uuid>` to safely retry. If a non-failed session with that key exists, it's returned with status `200` instead of creating a new one.
+
+### Response (201)
+
+```json
+{
+  "id": "session-uuid",
+  "status": "requires_escalation",
+  "currency": "USD",
+  "line_items": [],
+  "totals": { "subtotal": 9900, "tax": 792, "total": 10692 },
+  "links": [
+    { "rel": "terms-of-service", "href": "https://store.com/policies/terms-of-service" },
+    { "rel": "privacy-policy", "href": "https://store.com/policies/privacy-policy" }
+  ],
+  "continue_url": "https://mystore.myshopify.com/cart/...",
+  "expires_at": "2026-04-11T12:00:00Z",
+  "_links": {
+    "self": "https://app.agentcart.io/api/ucp/{slug}/checkout-sessions/session-uuid",
+    "complete": "https://app.agentcart.io/api/ucp/{slug}/checkout-sessions/session-uuid/complete",
+    "cancel": "https://app.agentcart.io/api/ucp/{slug}/checkout-sessions/session-uuid/cancel"
+  }
+}
+```
+
+## Get a session
+
+```
+GET /api/ucp/{slug}/checkout-sessions/{sessionId}
+```
+
+Returns current session status, totals, and links.
+
+## Update a session
+
+```
+PUT /api/ucp/{slug}/checkout-sessions/{sessionId}
+```
+
+Update `line_items`. Status and totals are not updated via PUT — use `/complete` or `/cancel`.

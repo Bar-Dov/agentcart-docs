@@ -1,1 +1,33 @@
-# Coming soon
+# UCP Specification
+
+AgentCart implements the **Universal Commerce Protocol (UCP)**.
+
+## Version
+
+Current version: **`2026-01-23`**
+
+This version string appears in every API response and in the manifest.
+
+## Official specification
+
+| Resource | Link |
+|----------|------|
+| GitHub repo | [github.com/Universal-Commerce-Protocol/ucp](https://github.com/Universal-Commerce-Protocol/ucp) |
+| Checkout schema | [ucp.dev/schemas/shopping/checkout.json](https://ucp.dev/schemas/shopping/checkout.json) |
+| Catalog schema | [ucp.dev/schemas/shopping/catalog_search.json](https://ucp.dev/schemas/shopping/catalog_search.json) |
+| MCP info | [modelcontextprotocol.io](https://modelcontextprotocol.io) |
+
+## Capabilities AgentCart implements
+
+| Capability | Status |
+|------------|--------|
+| `dev.ucp.shopping.checkout` | ✅ Full — create, get, update, complete, cancel |
+| `dev.ucp.shopping.catalog` | ✅ Full — search + lookup |
+| `dev.ucp.shopping.mcp` | ✅ JSON-RPC 2.0 transport |
+| `dev.ucp.payment.redirect` | ✅ Shopify checkout redirect |
+| `dev.ucp.payment.native` | ❌ Not supported (requires PCI DSS) |
+| Shipping / fulfillment | ❌ Not supported in current version |
+
+## Deviations from spec
+
+None intentional. If you find a deviation, open an issue at [github.com/Universal-Commerce-Protocol/ucp](https://github.com/Universal-Commerce-Protocol/ucp).

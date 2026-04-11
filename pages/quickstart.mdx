@@ -1,1 +1,44 @@
-# Coming soon
+# Quickstart — Shopify
+
+Get your Shopify store live on the UCP network in under 5 minutes.
+
+import { Steps } from 'nextra/components'
+
+<Steps>
+
+### Create an account
+
+Sign up at [app.agentcart.io](https://app.agentcart.io) and log in.
+
+### Run your first scan
+
+1. Go to **Scans → New Scan**
+2. Enter your Shopify store URL (e.g. `mystore.myshopify.com`)
+3. Wait ~2 minutes for the scan to complete
+
+The scan grades your store's AI readiness across product data, descriptions, structured data, and UCP compliance.
+
+### Connect AgentCart
+
+1. Go to **Stores → [your store] → Settings** or click **Connect AgentCart →** in the Overview tab
+2. Follow the 3-step wizard:
+   - **Step 1:** Enter your Shopify Storefront API token ([how to get it](https://shopify.dev/docs/api/usage/authentication#getting-started-with-authenticated-access))
+   - **Step 2:** Add a URL redirect in Shopify Admin: `/.well-known/ucp` → the URL shown in the wizard
+   - **Step 3:** Click **Verify** — AgentCart confirms agents can reach your manifest
+
+### You're live
+
+Your store is now discoverable via the UCP network. AI agents can:
+- Search your catalog
+- Add items to a checkout session
+- Redirect buyers to complete purchase
+
+Check **Agent Activity** to see incoming agent requests.
+
+</Steps>
+
+## What's next
+
+- [Understanding your score](/merchants/understanding-your-score)
+- [Reading your analytics](/merchants/reading-analytics)
+- [UCP API reference](/api-reference/overview)

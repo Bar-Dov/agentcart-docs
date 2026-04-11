@@ -1,1 +1,33 @@
-# Coming soon
+# Understanding Your Score
+
+Your scan produces two scores, both out of 100.
+
+## Raw score
+
+Your store's baseline using existing Shopify data — no AgentCart enrichment applied. This is how AI agents see your store today if they query it directly.
+
+## AgentCart score
+
+Your effective score when AgentCart-optimized descriptions are served to agents. Description fields that were gaps get full marks once you have approved AI descriptions. This score only appears after your store is connected and the scan completed after connection.
+
+## Score breakdown
+
+The Overview tab shows a breakdown table with every scoring category:
+
+| Status | Meaning |
+|--------|---------|
+| **Pass** | Meets the bar for AI agents |
+| **Warn** | Present but could be improved |
+| **Gap** | Missing or insufficient — hurts agent confidence |
+| **✓ Covered** | Was a gap, now covered by AgentCart AI descriptions |
+| **Theme fix** | Requires a Shopify theme change (e.g. JSON-LD structured data) |
+
+## Description fields
+
+**Description Coverage** and **Description Quality** together make up the largest scoring weight. These are the fields AgentCart addresses directly by generating AI-optimized descriptions that agents can read via the UCP manifest.
+
+## Structured Data
+
+If Structured Data shows as a gap, this means your theme doesn't emit JSON-LD schema markup on product pages. This is outside AgentCart's scope — it requires code changes in your Shopify theme. Options:
+- Ask your theme developer to add `Product` schema
+- Use a Shopify app like "Schema Plus" or "JSON-LD for SEO"

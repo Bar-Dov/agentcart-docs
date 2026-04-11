@@ -1,3 +1,34 @@
 # AgentCart Documentation
 
-Welcome to AgentCart docs.
+AgentCart makes your store discoverable and purchasable by AI agents — ChatGPT, Perplexity, Google AI Mode, and others that use the [Universal Commerce Protocol](https://github.com/Universal-Commerce-Protocol/ucp).
+
+## What AgentCart does
+
+1. **Scans** your store and scores product data readiness for AI agents
+2. **Connects** your store to the UCP network via a hosted manifest endpoint
+3. **Enriches** product descriptions with AI-optimized content agents can parse
+4. **Analyzes** agent activity — which products are requested, conversion rates, platforms
+
+## Choose your path
+
+import { Cards, Card } from 'nextra/components'
+
+<Cards>
+  <Card title="I'm a merchant" href="/merchants/how-it-works" arrow>
+    Learn how AgentCart works and how to set it up for your store
+  </Card>
+  <Card title="I'm a developer" href="/developers/ucp-overview" arrow>
+    Integrate with the AgentCart UCP API or add a new platform
+  </Card>
+</Cards>
+
+## Current platform support
+
+| Platform | Status |
+|----------|--------|
+| Shopify | ✅ Fully supported |
+| WooCommerce | 🔜 Coming soon |
+| Magento | 🔜 Coming soon |
+| Custom / headless | 🔜 On roadmap |
+
+> AgentCart implements the [Universal Commerce Protocol v2026-01-23](https://github.com/Universal-Commerce-Protocol/ucp). See [UCP Specification](/concepts/ucp-spec) for details.

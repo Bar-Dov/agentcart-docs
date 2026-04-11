@@ -1,1 +1,69 @@
-# Coming soon
+# MCP Endpoint
+
+See [MCP Transport](/developers/mcp-transport) for the full guide. This page is a quick reference.
+
+```
+POST /api/ucp/{slug}/mcp
+Content-Type: application/json
+```
+
+## Available tools
+
+| Tool | Description |
+|------|-------------|
+| `create_checkout_session` | Create a checkout session |
+| `get_checkout_session` | Get session status and details |
+| `complete_checkout_session` | Mark session as completed |
+| `cancel_checkout_session` | Cancel an active session |
+
+## Example: tools/list
+
+**Request:**
+```json
+{ "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }
+```
+
+**Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tools": [
+      {
+        "name": "create_checkout_session",
+        "description": "Create a UCP checkout session...",
+        "inputSchema": { "type": "object", "required": ["line_items"] }
+      }
+    ]
+  }
+}
+```
+
+## Example: tools/call
+
+**Request:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "create_checkout_session",
+    "arguments": {
+      "line_items": [{ "item": { "id": "gid://shopify/Product/123" }, "quantity": 1 }]
+    }
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [{ "type": "text", "text": "{\"id\":\"...\",\"status\":\"requires_escalation\",...}" }]
+  }
+}
+```
