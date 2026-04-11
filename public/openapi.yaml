@@ -1,0 +1,669 @@
+openapi: 3.1.0
+info:
+  title: AgentCart UCP API
+  version: 2026-01-23
+  description: |
+    The AgentCart UCP API implements the Universal Commerce Protocol for e-commerce stores.
+    All endpoints are namespaced under `/api/ucp/{slug}` where `slug` is your store's unique identifier.
+
+    **Base URL:** `https://app.agentcart.io`
+
+    **References:**
+    - UCP spec: https://github.com/Universal-Commerce-Protocol/ucp
+    - Checkout schema: https://ucp.dev/schemas/shopping/checkout.json
+    - Catalog schema: https://ucp.dev/schemas/shopping/catalog_search.json
+
+servers:
+  - url: https://app.agentcart.io/api/ucp/{slug}
+    variables:
+      slug:
+        description: Your store's unique UCP slug (shown in the AgentCart dashboard)
+        default: your-slug
+
+tags:
+  - name: Manifest
+    description: UCP manifest endpoint
+  - name: Checkout Sessions
+    description: Create and manage checkout sessions
+  - name: Catalog
+    description: Product search and lookup
+  - name: MCP
+    description: Model Context Protocol JSON-RPC 2.0 transport
+
+paths:
+  /:
+    get:
+      tags: [Manifest]
+      summary: Get UCP manifest
+      description: Returns the store's UCP manifest describing services, capabilities, and payment handlers. AI agents fetch this to discover the store.
+      responses:
+        '200':
+          description: UCP manifest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Manifest'
+              example:
+                ucp:
+                  version: "2026-01-23"
+                  services:
+                    dev.ucp.shopping:
+                      transport: rest/1.0
+                      endpoint: https://app.agentcart.io/api/ucp/abc123
+                    dev.ucp.shopping.mcp:
+                      transport: mcp/1.0
+                      endpoint: https://app.agentcart.io/api/ucp/abc123/mcp
+                  capabilities:
+                    dev.ucp.shopping.checkout:
+                      version: "2026-01-23"
+                    dev.ucp.shopping.catalog:
+                      version: "2026-01-23"
+                  payment_handlers:
+                    redirect:
+                      type: dev.ucp.payment.redirect
+                      redirect_url: https://app.agentcart.io/api/ucp/abc123/checkout-sessions
+        '404':
+          description: Store not found or UCP not enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /checkout-sessions:
+    post:
+      tags: [Checkout Sessions]
+      summary: Create checkout session
+      description: |
+        Creates a new UCP checkout session. Returns a `continue_url` the buyer must visit to complete payment on Shopify.
+
+        Supports `Idempotency-Key` header to safely retry without creating duplicate sessions.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Unique key (UUID recommended) to prevent duplicate sessions on retry. If a non-failed session with this key exists, it is returned with HTTP 200 instead of creating a new one.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+            example:
+              line_items:
+                - item:
+                    id: "gid://shopify/Product/123456"
+                    title: "Running Shoes"
+                    price: 9900
+                  quantity: 1
+              buyer:
+                email: buyer@example.com
+      responses:
+        '201':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSession'
+        '200':
+          description: Existing session returned (idempotency replay)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSession'
+        '400':
+          description: Invalid request body or empty line_items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Store not found or UCP not enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    options:
+      tags: [Checkout Sessions]
+      summary: CORS preflight
+      responses:
+        '204':
+          description: CORS headers returned
+
+  /checkout-sessions/{sessionId}:
+    get:
+      tags: [Checkout Sessions]
+      summary: Get checkout session
+      description: Returns the current state, totals, and links for an existing checkout session.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Session ID returned by create session
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSession'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Checkout Sessions]
+      summary: Update checkout session
+      description: Update `line_items` on an existing session. Does not update status or totals — use `/complete` or `/cancel` for that.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                line_items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/LineItem'
+      responses:
+        '200':
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSession'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    options:
+      tags: [Checkout Sessions]
+      summary: CORS preflight
+      responses:
+        '204':
+          description: CORS headers returned
+
+  /checkout-sessions/{sessionId}/complete:
+    post:
+      tags: [Checkout Sessions]
+      summary: Complete checkout session
+      description: |
+        Marks the session as `completed`. Call this after the buyer has finished payment on the Shopify checkout page.
+
+        Only sessions in `initiated` or `requires_escalation` state can be completed. Attempting to complete an already-terminal session returns **409 Conflict**.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session marked as completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSession'
+        '404':
+          description: Store not found or UCP not enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Session already in terminal state (completed or failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    options:
+      tags: [Checkout Sessions]
+      summary: CORS preflight
+      responses:
+        '204':
+          description: CORS headers returned
+
+  /checkout-sessions/{sessionId}/cancel:
+    post:
+      tags: [Checkout Sessions]
+      summary: Cancel checkout session
+      description: Cancels an active session, setting status to `failed`. Cannot cancel an already-completed session.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session canceled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSession'
+        '404':
+          description: Session not found or already completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    options:
+      tags: [Checkout Sessions]
+      summary: CORS preflight
+      responses:
+        '204':
+          description: CORS headers returned
+
+  /catalog/search:
+    get:
+      tags: [Catalog]
+      summary: Search products
+      description: Full-text product search proxied to the Shopify Admin API.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query string
+          example: "running shoes"
+        - name: first
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Number of results to return
+      responses:
+        '200':
+          description: Product search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+        '404':
+          description: Store not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /catalog/lookup:
+    get:
+      tags: [Catalog]
+      summary: Look up products by ID
+      description: Fetch specific products or variants by Shopify GID. Accepts both Product and ProductVariant GIDs.
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Comma-separated Shopify GIDs
+          example: "gid://shopify/Product/123456,gid://shopify/ProductVariant/789012"
+      responses:
+        '200':
+          description: Product lookup results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+        '404':
+          description: Store not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /mcp:
+    post:
+      tags: [MCP]
+      summary: MCP JSON-RPC 2.0 endpoint
+      description: |
+        Model Context Protocol transport. Supports `tools/list` and `tools/call` methods.
+
+        Available tools:
+        - `create_checkout_session`
+        - `get_checkout_session`
+        - `complete_checkout_session`
+        - `cancel_checkout_session`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcRequest'
+            examples:
+              tools_list:
+                summary: List available tools
+                value:
+                  jsonrpc: "2.0"
+                  id: 1
+                  method: tools/list
+                  params: {}
+              tools_call:
+                summary: Call a tool
+                value:
+                  jsonrpc: "2.0"
+                  id: 2
+                  method: tools/call
+                  params:
+                    name: create_checkout_session
+                    arguments:
+                      line_items:
+                        - item:
+                            id: "gid://shopify/Product/123456"
+                          quantity: 1
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+    options:
+      tags: [MCP]
+      summary: CORS preflight
+      responses:
+        '204':
+          description: CORS headers returned
+
+components:
+  schemas:
+    Manifest:
+      type: object
+      description: UCP manifest describing store services and capabilities
+      properties:
+        ucp:
+          type: object
+          properties:
+            version:
+              type: string
+              example: "2026-01-23"
+            services:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  transport:
+                    type: string
+                  endpoint:
+                    type: string
+                  schema:
+                    type: string
+            capabilities:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  version:
+                    type: string
+            payment_handlers:
+              type: object
+
+    LineItem:
+      type: object
+      required: [item]
+      description: A product line item in a checkout session
+      properties:
+        item:
+          type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              description: Shopify GID — Product, ProductVariant, or product URL
+              example: "gid://shopify/Product/123456"
+            title:
+              type: string
+              description: Optional product title hint
+            price:
+              type: integer
+              description: Optional price hint in minor units (cents). Actual price is fetched from Shopify.
+            image_url:
+              type: string
+              nullable: true
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+
+    Totals:
+      type: object
+      description: Monetary totals in minor units (e.g. 4999 = $49.99)
+      properties:
+        subtotal:
+          type: integer
+          description: Subtotal before tax, in minor units
+          example: 9900
+        tax:
+          type: integer
+          description: Tax amount in minor units
+          example: 792
+        total:
+          type: integer
+          description: Total including tax, in minor units
+          example: 10692
+
+    Link:
+      type: object
+      properties:
+        rel:
+          type: string
+          example: terms-of-service
+        href:
+          type: string
+          format: uri
+
+    Links:
+      type: object
+      description: HATEOAS-style self-links for session actions
+      properties:
+        self:
+          type: string
+          format: uri
+        complete:
+          type: string
+          format: uri
+        cancel:
+          type: string
+          format: uri
+
+    CheckoutSession:
+      type: object
+      description: A UCP checkout session
+      properties:
+        ucp:
+          type: object
+          description: UCP version envelope
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [initiated, requires_escalation, completed, failed]
+          description: |
+            - `initiated`: Session created, cart being built
+            - `requires_escalation`: Cart ready, buyer must visit continue_url
+            - `completed`: Buyer completed payment
+            - `failed`: Session canceled or errored
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          example: USD
+        line_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineItem'
+        totals:
+          $ref: '#/components/schemas/Totals'
+        links:
+          type: array
+          description: Policy links (terms of service, privacy policy)
+          items:
+            $ref: '#/components/schemas/Link'
+        continue_url:
+          type: string
+          format: uri
+          nullable: true
+          description: Shopify checkout URL. Redirect the buyer here to complete payment.
+        expires_at:
+          type: string
+          format: date-time
+          description: Session expiry time (6 hours after creation)
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    CreateSessionRequest:
+      type: object
+      required: [line_items]
+      properties:
+        line_items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/LineItem'
+        buyer:
+          type: object
+          description: Optional buyer info (informational only, not stored in checkout)
+          properties:
+            email:
+              type: string
+              format: email
+            name:
+              type: string
+
+    Product:
+      type: object
+      description: A product in UCP format
+      properties:
+        id:
+          type: string
+          description: Shopify Product GID
+          example: "gid://shopify/Product/123456"
+        title:
+          type: string
+        description:
+          type: string
+        handle:
+          type: string
+        url:
+          type: string
+          format: uri
+        price_range:
+          type: object
+          properties:
+            min:
+              type: integer
+              description: Minimum variant price in minor units
+            max:
+              type: integer
+              description: Maximum variant price in minor units
+            currency:
+              type: string
+        variants:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Shopify ProductVariant GID
+              title:
+                type: string
+              price:
+                type: integer
+                description: Price in minor units
+              currency:
+                type: string
+              available:
+                type: boolean
+        media:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                format: uri
+              alt:
+                type: string
+                nullable: true
+
+    JsonRpcRequest:
+      type: object
+      required: [jsonrpc, method]
+      properties:
+        jsonrpc:
+          type: string
+          enum: ["2.0"]
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+          nullable: true
+        method:
+          type: string
+          enum: [tools/list, tools/call]
+        params:
+          type: object
+
+    JsonRpcResponse:
+      type: object
+      properties:
+        jsonrpc:
+          type: string
+          enum: ["2.0"]
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+          nullable: true
+        result:
+          type: object
+          nullable: true
+        error:
+          type: object
+          nullable: true
+          properties:
+            code:
+              type: integer
+            message:
+              type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Session not found"
