@@ -1,0 +1,5 @@
+export default {
+  'agentic-commerce': 'Agentic Commerce',
+  'ucp-spec': 'UCP Specification',
+  'session-lifecycle': 'Session Lifecycle',
+}

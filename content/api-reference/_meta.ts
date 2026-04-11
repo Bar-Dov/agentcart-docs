@@ -1,0 +1,8 @@
+export default {
+  overview: 'Overview',
+  manifest: 'UCP Manifest',
+  'checkout-sessions': 'Checkout Sessions',
+  'complete-cancel': 'Complete & Cancel',
+  catalog: 'Catalog',
+  mcp: 'MCP Endpoint',
+}
