@@ -4,4 +4,5 @@ export default {
   'understanding-your-score': 'Understanding Your Score',
   'connecting-agentcart': 'Connecting AgentCart',
   'reading-analytics': 'Reading Analytics',
+  'ab-testing': 'A/B Testing',
 }

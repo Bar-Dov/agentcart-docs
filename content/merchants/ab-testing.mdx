@@ -1,0 +1,81 @@
+# A/B Testing
+
+AgentCart lets you run A/B tests on product descriptions to find out which version performs better with AI agents. Different agents see different description variants in real UCP and MCP responses — this isn't a simulation.
+
+## How it works
+
+When a test is running, AgentCart splits incoming agent traffic between your description variants. The split is deterministic: the same agent platform from the same IP on the same day always sees the same variant. This ensures consistent behavior within a session without requiring cookies or agent-side state.
+
+Each time an agent fetches your catalog (via search or lookup), AgentCart records which variant was served. If that product later appears in a checkout session, the exposure is marked as a conversion.
+
+## Creating a test
+
+1. Go to your store's **A/B Tests** tab
+2. Click **New Test**
+3. **Select a product** — search by name from your catalog
+4. **Name your test** — e.g. "Holiday description test" or "Technical vs. conversational"
+5. **Write your variants:**
+   - **Variant A (Control)** — pre-filled with the current description (approved optimization or Shopify original)
+   - **Variant B** — pre-filled with the suggested description if one exists, or blank
+6. **Choose a traffic split:**
+
+| Split | When to use |
+|-------|-------------|
+| **50/50** | Default. Equal exposure, fastest to reach significance. |
+| **70/30** | When you want most traffic on the control while testing a new variant. |
+| **80/20** | Conservative. Minimal risk to current performance. |
+
+7. Click **Save as Draft** to review later, or **Start Test** to begin immediately
+
+## Test lifecycle
+
+| State | What it means |
+|-------|---------------|
+| **Draft** | Test is saved but not running. No traffic is split. You can edit variants and settings. |
+| **Running** | Agents receive different variants based on the traffic split. Exposures are recorded. |
+| **Paused** | Traffic splitting stops. All agents see the pre-test description. Data is preserved — you can resume. |
+| **Completed** | Test is finished. Data is frozen. You can review results and pick a winner. |
+
+**Actions:**
+- **Start** — begins the test, snapshots the current description for safe revert
+- **Pause** — temporarily stops the test without losing data
+- **Resume** — restarts a paused test
+- **Stop** — ends the test permanently, moves to Completed
+
+Only one test can be active (draft or running) per product at a time.
+
+## Reading results
+
+The test detail view shows:
+
+| Metric | What it means |
+|--------|---------------|
+| **Impressions** | Number of times each variant was served to an agent |
+| **Conversions** | Number of times a product with that variant appeared in a checkout |
+| **Conversion rate** | Conversions / Impressions for each variant |
+| **Lift** | How much better (or worse) the variant performs compared to the control, as a percentage |
+| **Statistical confidence** | How likely it is that the difference between variants is real and not due to chance |
+
+A daily chart shows impressions per variant over time so you can spot trends.
+
+### What "statistically significant" means
+
+AgentCart uses a standard two-proportion z-test. When confidence reaches **95%** or higher, the result is marked as significant — meaning there's less than a 5% chance the observed difference is random. Below that threshold, the difference might just be noise.
+
+## Applying a winner
+
+After stopping a test:
+
+1. Review the results in the test detail view
+2. Click **Apply Winner** on the variant you want to keep
+3. That variant's description becomes the **approved description** for the product — served to all agents going forward
+
+If you stop a test without picking a winner, the product reverts to its pre-test description.
+
+## Tips for running good tests
+
+- **Run for at least 7 days** — shorter tests may not capture enough agent traffic patterns
+- **Wait for significance** — don't pick a winner based on a small number of impressions
+- **Test one thing at a time** — if you change both the tone and the content, you won't know which made the difference
+- **Make meaningful differences** — small wording tweaks are unlikely to produce measurable results. Test genuinely different approaches (e.g. feature-focused vs. benefit-focused, technical vs. conversational)
+- **Check traffic first** — products that rarely appear in agent searches won't generate enough data. Use the Agent Activity tab to identify high-traffic products
