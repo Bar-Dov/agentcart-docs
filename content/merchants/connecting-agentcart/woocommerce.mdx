@@ -1,0 +1,61 @@
+# Connecting WooCommerce
+
+The AgentCart WordPress plugin connects your WooCommerce store to AI shopping agents. It auto-generates API credentials, pairs with your AgentCart account via a 6-digit code, and requires no manual API configuration.
+
+## Prerequisites
+
+- A WordPress site with **WooCommerce** installed and active
+- **Admin access** to WordPress
+- An AgentCart account ([sign up](https://app.agentcart.io))
+
+## Installation
+
+### Step 1 — Install the plugin
+
+In your WordPress admin, go to **Plugins → Add New** and search for **"AgentCart"**. Click **Install** then **Activate**.
+
+The plugin automatically generates secure WooCommerce REST API credentials on activation — no manual key setup required.
+
+### Step 2 — Get your pairing code
+
+In your AgentCart dashboard, go to **Connect** and select **WooCommerce**. A 6-digit pairing code will appear. The code expires after 15 minutes.
+
+### Step 3 — Pair your store
+
+In your WordPress admin sidebar, go to **WooCommerce → AgentCart**. Enter the 6-digit code and click **Connect**.
+
+AgentCart will verify the connection, pull your store info, and run an initial product scan automatically.
+
+### Step 4 — Verify the connection
+
+Back in your AgentCart dashboard, your store should now appear under **Stores** with a **Connected** status and the green "Agentic Commerce live" indicator.
+
+## What happens after connection
+
+- Your full product catalog becomes searchable by AI agents via UCP
+- An initial scan runs automatically to score your store's AI-readiness
+- Product updates in WooCommerce sync to AgentCart automatically
+- The **Agent Playground** in your dashboard lets you test exactly what agents see
+
+## Managing the connection
+
+### From WordPress
+
+Go to **WooCommerce → AgentCart** to see your connection status, merchant ID, and a link to your AgentCart dashboard. Click **Disconnect** to remove the connection.
+
+### From AgentCart
+
+Go to **Settings** for your store. You can trigger product syncs, configure UCP settings, or remove the store entirely.
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Plugin says "WooCommerce required" | Make sure WooCommerce is installed and activated before activating AgentCart |
+| Pairing code expired | Generate a new code from the AgentCart dashboard — codes expire after 15 minutes |
+| Products not showing after scan | WooCommerce requires API credentials to read products. The plugin handles this automatically — try deactivating and reactivating if products are missing |
+| Store shows as disconnected | Check that the plugin is still active in WordPress. Re-pair with a new code if needed |
+
+## Not on WooCommerce?
+
+See [Connecting AgentCart](/merchants/connecting-agentcart) for all supported platforms, including [Shopify](/merchants/connecting-agentcart/shopify).
