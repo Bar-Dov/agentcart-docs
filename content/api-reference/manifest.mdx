@@ -11,7 +11,7 @@ Returns the store's UCP manifest. AI agents fetch this to discover services and 
 ```json
 {
   "ucp": {
-    "version": "2026-01-23",
+    "version": "2026-04-08",
     "services": {
       "dev.ucp.shopping": {
         "transport": "rest/1.0",
@@ -25,8 +25,12 @@ Returns the store's UCP manifest. AI agents fetch this to discover services and 
       }
     },
     "capabilities": {
-      "dev.ucp.shopping.checkout": { "version": "2026-01-23" },
-      "dev.ucp.shopping.catalog": { "version": "2026-01-23" }
+      "dev.ucp.shopping.catalog":     { "version": "2026-04-08" },
+      "dev.ucp.shopping.checkout":    { "version": "2026-04-08" },
+      "dev.ucp.shopping.cart":        { "version": "2026-04-08" },
+      "dev.ucp.shopping.order":       { "version": "2026-04-08" },
+      "dev.ucp.shopping.discount":    { "version": "2026-04-08" },
+      "dev.ucp.shopping.fulfillment": { "version": "2026-04-08" }
     },
     "payment_handlers": {
       "redirect": {
@@ -38,9 +42,13 @@ Returns the store's UCP manifest. AI agents fetch this to discover services and 
 }
 ```
 
+## Capability advertising
+
+Only capabilities the merchant has **enabled** are listed. If a store turns off discount codes under [capability settings](/merchants/capability-settings), the `dev.ucp.shopping.discount` key disappears from the manifest entirely — that's how agents discover what's available. `catalog` and `checkout` are always advertised; the others are optional.
+
 ## How agents use this
 
 Agents fetch `/.well-known/ucp` on the merchant's domain. The merchant has a URL redirect pointing that to this endpoint. From the manifest, agents discover:
 - Which transport to use (REST or MCP)
 - The checkout endpoint URL
-- What capabilities are available
+- What optional capabilities are available (cart, order tracking, discounts, fulfillment quotes)

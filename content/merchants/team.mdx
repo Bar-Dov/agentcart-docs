@@ -1,0 +1,53 @@
+# Team management
+
+Each AgentCart account belongs to an **organization**. You can invite teammates to share access to all your stores, scans, and analytics.
+
+## Where to manage your team
+
+Open the **Org** tab in the sidebar of [app.agentcart.io](https://app.agentcart.io). You'll see:
+
+- Your organization's name (owners can rename it inline)
+- The list of current members and their roles
+- Pending invitations
+- A button to send a new invitation (owners only)
+
+## Roles
+
+| Role | Can do |
+|------|--------|
+| **Owner** | Everything members can do, plus: invite teammates, revoke invitations, remove members, rename the organization |
+| **Member** | Manage stores, run scans, view analytics, configure capabilities |
+
+Every organization keeps at least one owner. If you're the only owner, you can't be removed and you can't leave — invite another owner first.
+
+> More granular roles (admin / viewer / billing) are on the roadmap. The current matrix is the v1 baseline.
+
+## Inviting a teammate
+
+1. On the **Org** page, click **+ Invite** (top right of the Team members card).
+2. Enter their email and pick a role.
+3. They'll receive an email titled **"You've been invited to AgentCart"** with an accept link.
+4. The link is valid for **14 days** and is single-use.
+
+When they click the link:
+- If they already have an AgentCart account with that email, they're added to your org and redirected to the dashboard.
+- If they don't, they're asked to sign up first, then automatically joined to your org.
+
+The invitation appears under **Pending invitations** on the Org page until it's accepted or expires. Owners can revoke a pending invitation at any time.
+
+## Limits
+
+To discourage abuse, invitations are rate-limited:
+
+- Up to **10 active (unaccepted) invitations** per organization
+- Up to **20 invitations per owner per 24 hours**
+
+Revoke a pending invitation to free up a slot.
+
+## Removing a member
+
+Owners can remove any member except the last remaining owner. Click the **⋯** icon next to their row and confirm. Removed members instantly lose access to all stores in the organization.
+
+## Leaving an organization
+
+Members can leave at any time via **Leave organization** at the bottom of the Team members list. Owners can only leave after promoting another member to owner.

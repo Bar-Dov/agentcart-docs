@@ -1,0 +1,67 @@
+# Orders
+
+Order tracking is part of the **`dev.ucp.shopping.order`** capability. After a buyer completes checkout, an agent can look up the resulting order to confirm fulfillment and surface tracking info.
+
+This capability is on by default. If the merchant disables order tracking under store settings, this endpoint returns `404`.
+
+## Get an order
+
+```
+GET /api/ucp/{slug}/orders/{orderId}
+```
+
+`orderId` is the platform's order identifier (Shopify GID or WooCommerce order ID). The endpoint also accepts AgentCart's internal order UUID returned at session-completion time.
+
+### Response (200)
+
+```json
+{
+  "ucp": { "version": "2026-04-08", "capabilities": { ... } },
+  "id": "order-uuid",
+  "status": "shipped",
+  "currency": "USD",
+  "line_items": [
+    {
+      "item": { "id": "gid://shopify/ProductVariant/789", "title": "Running Shoes" },
+      "quantity": 1,
+      "price": 9900
+    }
+  ],
+  "totals": { "subtotal": 9900, "tax": 792, "shipping": 600, "total": 11292 },
+  "buyer": { "email": "buyer@example.com" },
+  "shipping_address": {
+    "name": "Jane Doe",
+    "line1": "123 Market St",
+    "city": "San Francisco",
+    "region": "CA",
+    "postal_code": "94103",
+    "country": "US"
+  },
+  "tracking": [
+    { "carrier": "ups", "number": "1Z999AA10123456784", "url": "https://..." }
+  ],
+  "_links": { "self": "https://app.agentcart.io/api/ucp/{slug}/orders/order-uuid" }
+}
+```
+
+### Statuses
+
+| Status | Meaning |
+|--------|---------|
+| `pending` | Payment not yet captured |
+| `confirmed` | Payment captured, awaiting fulfillment |
+| `processing` | Being prepared for shipment |
+| `shipped` | In transit; `tracking` populated |
+| `delivered` | Marked delivered by the carrier |
+| `canceled` | Canceled (no charge or refunded) |
+| `refunded` | Returned and refunded |
+
+### Freshness
+
+On each call, AgentCart asks the underlying platform for the latest status and writes through to its cache. If the platform is unreachable, the cached snapshot is returned — so the response is always at least as fresh as the last successful poll plus any webhook-driven update.
+
+import { Callout } from 'nextra/components'
+
+<Callout>
+For Shopify stores, orders placed through AgentCart are tagged with the session id (`agentcart_session_id`) so they can be filtered in Shopify Admin. WooCommerce stores get the same tag via order meta. See [How AgentCart implements UCP](/developers/how-agentcart-implements-ucp) for details.
+</Callout>

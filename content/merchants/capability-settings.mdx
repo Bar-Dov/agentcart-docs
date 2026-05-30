@@ -1,0 +1,39 @@
+# Capability settings
+
+Each store decides which UCP **capabilities** it exposes to agents. By default every supported capability is on. Disable a capability and it disappears from your store's manifest and the corresponding endpoints return `404` — agents fall back to whatever path is still available (usually the hosted checkout).
+
+## Where to configure
+
+Open **Stores → [your store] → Settings**. The **Capabilities** section lists every optional capability your platform supports, with a toggle.
+
+import { Callout } from 'nextra/components'
+
+<Callout>
+**Catalog** and **checkout** are core to UCP and can't be turned off — disabling them would mean agents can't shop your store at all.
+</Callout>
+
+## Capability matrix
+
+| Capability | UCP key | What it controls | Default |
+|------------|---------|------------------|---------|
+| **Cart** | `dev.ucp.shopping.cart` | The persistent cart endpoints (`POST /carts`, `PUT /carts/:id`). When off, agents must use one-shot checkout sessions. | On |
+| **Order tracking** | `dev.ucp.shopping.order` | Lets agents fetch status of orders placed through them (`GET /orders/:id`). | On |
+| **Discount codes** | `dev.ucp.shopping.discount` | Lets agents apply coupon / promo codes to a cart or session. When off, codes are silently stripped from incoming requests. | On |
+| **Fulfillment quotes** | `dev.ucp.shopping.fulfillment` | Lets agents request shipping rates before checkout. | On |
+
+## What happens when a capability is off
+
+Three things, all at once:
+
+1. The capability is **removed from the UCP manifest** at `/.well-known/ucp`, so an agent reading the manifest knows not to call it.
+2. The corresponding endpoint returns `404 Not Found` if called directly, the same as if your store didn't exist.
+3. For composite endpoints (e.g. `POST /checkout-sessions` accepts a `discounts` field), the disabled field is **silently stripped** from the request body — the rest of the request still works.
+
+## Why disable a capability?
+
+- **Discount codes** — if your promotional codes have constraints agents can't satisfy (single-use, customer-specific, manual review), turning them off prevents confusion.
+- **Order tracking** — if order data is sensitive or your platform doesn't support agent-tagged orders cleanly.
+- **Cart** — if you want every agent interaction to be a fresh one-shot checkout session with no persistent state.
+- **Fulfillment quotes** — if shipping pricing depends on logic the platform's quote API can't model (custom rules, business-account rates).
+
+The toggles are non-destructive: turning a capability back on restores it instantly with no data migration.

@@ -1,0 +1,102 @@
+# Carts
+
+The cart endpoints are part of the **`dev.ucp.shopping.cart`** capability. Use them when an agent needs to build up a multi-item cart over several turns before checking out. For one-shot purchases, use [Checkout Sessions](/api-reference/checkout-sessions) directly.
+
+The cart capability is on by default. Merchants can disable it under store settings — if disabled, these endpoints return `404`.
+
+## Create a cart
+
+```
+POST /api/ucp/{slug}/carts
+```
+
+### Request body
+
+```json
+{
+  "line_items": [
+    {
+      "item": {
+        "id": "gid://shopify/ProductVariant/789",
+        "title": "Running Shoes — Size 10",
+        "price": 9900
+      },
+      "quantity": 1
+    }
+  ],
+  "discounts": {
+    "codes": ["SUMMER10"]
+  },
+  "buyer": {
+    "email": "buyer@example.com"
+  }
+}
+```
+
+- `line_items` — required, non-empty
+- `discounts.codes` — optional. Requires the **`dev.ucp.shopping.discount`** capability. If the merchant has disabled discounts, the codes are silently stripped.
+- `buyer` — optional context
+
+### Response (201)
+
+```json
+{
+  "ucp": { "version": "2026-04-08", "capabilities": { ... } },
+  "id": "cart-uuid",
+  "status": "active",
+  "currency": "USD",
+  "line_items": [ ... ],
+  "totals": { "subtotal": 9900, "tax": 792, "total": 9792 },
+  "discounts": {
+    "codes": ["SUMMER10"],
+    "applied": [{ "code": "SUMMER10", "amount": 990 }],
+    "rejected": []
+  },
+  "continue_url": "https://mystore.myshopify.com/cart/...",
+  "expires_at": "2026-05-31T12:00:00Z",
+  "_links": {
+    "self":     "https://app.agentcart.io/api/ucp/{slug}/carts/cart-uuid",
+    "update":   "https://app.agentcart.io/api/ucp/{slug}/carts/cart-uuid",
+    "cancel":   "https://app.agentcart.io/api/ucp/{slug}/carts/cart-uuid/cancel",
+    "checkout": "https://app.agentcart.io/api/ucp/{slug}/checkout-sessions"
+  }
+}
+```
+
+The `discounts` block is only present in the response if discount codes were supplied **and** the capability is enabled. `applied` lists the codes the platform accepted; `rejected` lists codes that failed (expired, minimum-spend not met, etc.) with the reason.
+
+## Get / update a cart
+
+```
+GET /api/ucp/{slug}/carts/{cartId}
+PUT /api/ucp/{slug}/carts/{cartId}
+```
+
+`PUT` accepts the same body as `POST` and re-syncs `line_items` and `discounts` against the underlying platform cart. Use this to mutate quantities or add/remove discount codes mid-conversation. Pass `discounts.codes: []` to clear all codes.
+
+## Cancel a cart
+
+```
+POST /api/ucp/{slug}/carts/{cartId}/cancel
+```
+
+Sets `status: "canceled"` and abandons the platform-side cart. Cancelling an already-terminal cart returns `409 Conflict`.
+
+## Carts vs. checkout sessions
+
+| Use case | Endpoint |
+|----------|----------|
+| Agent is browsing — add / remove items, apply a code, possibly drop the cart | **Carts** |
+| Agent has a confirmed item list and just needs a checkout URL to hand to the buyer | **Checkout Sessions** |
+
+A cart can hand off to a checkout session via the `_links.checkout` URL — agents should `POST` the same `line_items` to that endpoint when the buyer is ready to pay.
+
+## Discount codes
+
+The `dev.ucp.shopping.discount` capability uses **replacement semantics**: the codes you send in a request are the codes the cart will have afterwards. Pass `[]` to clear, or omit the field to leave codes unchanged.
+
+import { Callout } from 'nextra/components'
+
+<Callout>
+Code validation is delegated to the underlying platform (Shopify / WooCommerce). AgentCart does not maintain its own coupon engine.
+</Callout>
